@@ -58,16 +58,16 @@ Example Output:
 }
 ===Dialogue Content===
 """,
-  "dimension_details": {
-      "Storyline Consistency": {
-        "dimension_brief": "Whether the storyline and characters' reactions in the simulated conversation align well with those in the reference conversation",
-        "dimension_criteria": """### Storyline Consistency
+    "dimension_details": {
+        "Storyline Consistency": {
+            "dimension_brief": "Whether the storyline and characters' reactions in the simulated conversation align well with those in the reference conversation",
+            "dimension_criteria": """### Storyline Consistency
    - Type: Storyline Consistency
-     * Characters' reactions (emotions, attitudes, behaviors) in the simulated conversation deviate from those in the original conversation"""
-      },
-      "Anthropomorphism": {
-        "dimension_brief": "How human-like and natural the characters behave",
-        "dimension_criteria": """### Anthropomorphism
+     * Characters' reactions (emotions, attitudes, behaviors) in the simulated conversation deviate from those in the original conversation""",
+        },
+        "Anthropomorphism": {
+            "dimension_brief": "How human-like and natural the characters behave",
+            "dimension_criteria": """### Anthropomorphism
    - Type: Self-identity
      * Lacks initiative and goals
      * Does not make independent decisions
@@ -84,11 +84,11 @@ Example Output:
    - Type: Social Interaction
      * Shows a lack of understanding of others' thoughts and feelings
      * Reacts rigidly to others without considering the context.
-     * Demonstrate a lack of appropriate social skills."""
-      },
-      "Character Fidelity": {
-        "dimension_brief": "How well the characters match their established profiles from the book",
-        "dimension_criteria": """### Character Fidelity
+     * Demonstrate a lack of appropriate social skills.""",
+        },
+        "Character Fidelity": {
+            "dimension_brief": "How well the characters match their established profiles from the book",
+            "dimension_criteria": """### Character Fidelity
    (Only apply to the main characters: {major_characters})
    - Type: Character Language
      * Uses vocabulary, expressions, and tone that are not appropriate for the characters' traits or  social/educational background
@@ -104,11 +104,11 @@ Example Output:
      * Exhibits contrasting reactions compared to those in the reference conversation if situated in similar contexts. (Such flaws should be counted both in the "Storyline Consistency" dimension and the "Character Fidelity" dimension.) 
 
    - Type: Relationship & Social Status
-     * Interacts inappropriately with other characters regarding their background, relationship and social status"""
-      },
-      "Storyline Quality": {
-        "dimension_brief": "How well the conversation maintains logical consistency and narrative quality",
-        "dimension_criteria": """### Storyline Quality
+     * Interacts inappropriately with other characters regarding their background, relationship and social status""",
+        },
+        "Storyline Quality": {
+            "dimension_brief": "How well the conversation maintains logical consistency and narrative quality",
+            "dimension_criteria": """### Storyline Quality
    - Type: Flow & Progression
      * Shows unnatural progression or lacks meaningful developments
      * Dialogue is verbose and redundant
@@ -116,10 +116,7 @@ Example Output:
      * Mechanically repeats one's own words or phrases. More repetitions lead to higher severity (up to 10). 
 
    - Type: Logical Consistency
-     * Contains factual contradictions between statements or perspectives"""
-      }
-  }
+     * Contains factual contradictions between statements or perspectives""",
+        },
+    },
 }
-
-
-
