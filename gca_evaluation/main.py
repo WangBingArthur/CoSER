@@ -1,7 +1,7 @@
 import json
-from utils import get_response
+# from utils import get_response
 import argparse
-from tqdm import tqdm
+# from tqdm import tqdm
 from utils import setup_logger
 from agent import Agent
 import random
@@ -71,6 +71,12 @@ parser.add_argument(
     default=False,
     action="store_true",
     help="Disable inner thoughts in generation",
+)
+parser.add_argument(
+    "--wo_reference",
+    default=False,
+    action="store_true",
+    help="Disable storyline consistency evaluation",
 )
 parser.add_argument(
     "--retrieval",
@@ -442,13 +448,24 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
     simulation_results = json.load(open(simulation_path, "r"))
 
     # Define evaluation dimensions
-    dimensions = [
-        "Storyline Consistency",
-        "Anthropomorphism",
-        "Character Fidelity",
-        "Storyline Quality",
-    ]
-    scores = {d: [] for d in dimensions + ["bleu", "rouge_l"]}
+    dimensions = (
+        [
+            "Anthropomorphism",
+            "Character Fidelity",
+            "Storyline Quality",
+        ]
+        if args.wo_reference
+        else [
+            "Storyline Consistency",
+            "Anthropomorphism",
+            "Character Fidelity",
+            "Storyline Quality",
+        ]
+    )
+    scores = {
+        d: []
+        for d in (dimensions if args.wo_reference else dimensions + ["bleu", "rouge_l"])
+    }
     cases = {}
 
     # Evaluate each simulation result
@@ -470,7 +487,7 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
         # Filter out NSP messages and clean up simulation/reference for comparison
         simulation = result["simulation"]
         simulation = [m for m in simulation if m["role"] != NSP]
-        reference = circumstance["dialogues"]
+        reference = [] if args.wo_reference else circumstance["dialogues"]
 
         # Remove inner thoughts for fair comparison
         simulation = [
@@ -493,8 +510,12 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
 
         # Convert to readable string format for evaluation
         simulation_str = "\n\n".join([m["content"].strip("\n") for m in simulation])
-        reference_str = "\n\n".join(
-            [f"{m['character']}: {m['message']}".strip("\n") for m in reference]
+        reference_str = (
+            ""
+            if args.wo_reference
+            else "\n\n".join(
+                [f"{m['character']}: {m['message']}".strip("\n") for m in reference]
+            )
         )
 
         logger.info(
@@ -529,7 +550,7 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
                             f["severity"] = 1
 
                 return response
-            except:
+            except Exception:
                 return False
 
         logger.info(f"{book_title}-{i_p}-{i_c}-{scenario_str}")
@@ -598,11 +619,16 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
             )
 
         # Calculate automated metrics
-        bleu, rouge_l = calculate_bleu_rouge(
-            reference[args.continue_from :], simulation[args.continue_from :]
+        bleu, rouge_l = (
+            (0, 0)
+            if args.wo_reference
+            else calculate_bleu_rouge(
+                reference[args.continue_from:], simulation[args.continue_from:]
+            )
         )
-        eval_result["bleu"] = bleu
-        eval_result["rouge_l"] = rouge_l
+        if not args.wo_reference:
+            eval_result["bleu"] = bleu
+            eval_result["rouge_l"] = rouge_l
 
         # Store evaluation results
         cases[f"{book_title}-{i_p}-{i_c}"] = {
@@ -616,8 +642,9 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
         # Accumulate scores
         for dimension in dimensions:
             scores[dimension].append(eval_result[dimension]["score"])
-        scores["bleu"].append(bleu)
-        scores["rouge_l"].append(rouge_l)
+        if not args.wo_reference:
+            scores["bleu"].append(bleu)
+            scores["rouge_l"].append(rouge_l)
 
     # Calculate average scores across all dimensions
     avg_scores = {
@@ -625,12 +652,13 @@ def gca_judging(test_file, actor_model, retrieval, judge_model, nth_exp=0):
         for dimension in dimensions
     }
     avg_scores["avg"] = sum(avg_scores.values()) / len(avg_scores)
-    avg_scores.update(
-        {
-            metric: sum(scores[metric]) / max(1, len(scores[metric]))
-            for metric in ["bleu", "rouge_l"]
-        }
-    )
+    if not args.wo_reference:
+        avg_scores.update(
+            {
+                metric: sum(scores[metric]) / max(1, len(scores[metric]))
+                for metric in ["bleu", "rouge_l"]
+            }
+        )
 
     logger.info(
         f'{actor_setting}: Average score of {len(simulation_results)} samples: \n{avg_scores["avg"]} {avg_scores} on {test_file}'
@@ -670,7 +698,7 @@ if __name__ == "__main__":
         all_scores = {}
 
         from concurrent.futures import ProcessPoolExecutor
-        import functools
+        # import functools
 
         def generate(exp_args):
             """Run simulation for given experiment args"""
